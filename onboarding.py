@@ -86,9 +86,9 @@ def setup_databases(client):
 
     metrics_db = client["Metrics"]
     ttl_collections = {
-        "hardwareMin": 7 * 24 * 3600,   # 7 days — TTL index
-        "hardwareHour": None,            
-        "hardwareDay": None,             
+        "hardwareMin": 7 * 24 * 3600,   # 7 days — timeseries native TTL index
+        "hardwareHour": None,            # plain collection; purged by mongoDB/purgeOldEntriesHourly.js (90 days)
+        "hardwareDay": None,             # indefinite retention
     }
     for coll_name, ttl_seconds in ttl_collections.items():
         if coll_name not in metrics_db.list_collection_names():
@@ -107,11 +107,12 @@ def setup_databases(client):
                 print(f"      TTL index set ({ttl_seconds}s) on Metrics.{coll_name}")
 
 def setup_triggers():
-    step("Atlas Scheduled Triggers (hourlyRollup / dailyRollup)")
+    step("Atlas Scheduled Triggers (hourlyRollup / dailyRollup / purgeOldEntriesHourly)")
     print("    These are App Services triggers — deploy them manually in the Atlas UI")
     print("    or via the Atlas CLI using the JS files in mongoDB/")
-    print("    mongoDB/hourlyRollup.js  -> runs every hour")
-    print("    mongoDB/dailyRollup.js   -> runs every day")
+    print("    mongoDB/hourlyRollup.js           -> runs every hour")
+    print("    mongoDB/dailyRollup.js            -> runs every day")
+    print("    mongoDB/purgeOldEntriesHourly.js  -> runs every day (purges hardwareHour older than 90 days)")
     print()
     response = input("    Type 'done' once you have deployed the triggers to continue: ")
     while response.strip().lower() != "done":

@@ -4,7 +4,7 @@ A lightweight hardware metrics collector that runs on Linux hosts and ships data
 
 ## How it works
 
-- `collection.py` gathers CPU, RAM, disk, ping, and temperature readings once per minute and inserts them into `Metrics.hardwareMin`.
+- `collection.py` gathers CPU, RAM, disk, and ping readings once per minute and inserts them into `Metrics.hardwareMin`.
 - A systemd service (`vigilis-lector.service`) keeps the collector running on boot.
 - Two Atlas Scheduled Triggers (`hourlyRollup`, `dailyRollup`) aggregate the minute-level data into `Metrics.hardwareHour` and `Metrics.hardwareDay`.
 
@@ -70,18 +70,19 @@ python3 utilities/ping_mongoDB.py
 In the Atlas UI (or mongosh), create these collections:
 
 - `Hosts.specifications` — no TTL
-- `Metrics.hardwareMin` — TTL index on `timestamp`, expireAfterSeconds: `604800` (7 days)
-- `Metrics.hardwareHour` — TTL index on `timestamp`, expireAfterSeconds: `7776000` (90 days)
-- `Metrics.hardwareDay` — no TTL
+- `Metrics.hardwareMin` — timeseries collection with a native TTL index on `timestamp`, expireAfterSeconds: `604800` (7 days)
+- `Metrics.hardwareHour` — plain collection, no native TTL support; retention (90 days) is enforced by `mongoDB/purgeOldEntriesHourly.js`
+- `Metrics.hardwareDay` — no TTL, indefinite retention
 
 #### 3. Deploy Atlas Scheduled Triggers
 
-Deploy both JS files as App Services Scheduled Triggers in the Atlas UI or via the Atlas CLI. Link them to your cluster's data source named `MonitoringSystem`.
+Deploy all JS files as App Services Scheduled Triggers in the Atlas UI or via the Atlas CLI. Link them to your cluster's data source named `MonitoringSystem`.
 
 | File | Schedule | Writes to |
 |---|---|---|
 | `mongoDB/hourlyRollup.js` | Every hour | `Metrics.hardwareHour` |
 | `mongoDB/dailyRollup.js` | Every day | `Metrics.hardwareDay` |
+| `mongoDB/purgeOldEntriesHourly.js` | Every day | Deletes `Metrics.hardwareHour` docs older than 90 days |
 
 #### 4. Insert host specifications
 
