@@ -16,6 +16,13 @@ exports = async function () {
   const pipeline =
 [
   {
+    $match: {
+      timestamp: {
+        $gte: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+      }
+    }
+  },
+  {
     $sort: {
       timestamp: 1
     }
