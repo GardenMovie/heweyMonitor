@@ -19,9 +19,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-MONGO_URI = os.environ["MONGO_URI"]
-HOSTNAME = os.environ["HOSTNAME"]
-
 # Database and collection names
 DB_NAME = "Metrics"
 COLLECTION_NAME = "hardwareMin"
@@ -85,11 +82,11 @@ def ping_latency(host="8.8.8.8"):
     except Exception:
         return None
 
-def collect_metrics():
+def collect_metrics(hostname):
     metrics = {
         "timestamp": datetime.now(timezone.utc),
         "metadata": {
-            "hostname": HOSTNAME,
+            "hostname": hostname,
         },
         "fields": {
             "cpu_percent": psutil.cpu_percent(interval=1),
@@ -101,6 +98,9 @@ def collect_metrics():
     return metrics
 
 if __name__ == "__main__":
+    MONGO_URI = os.environ["MONGO_URI"]
+    HOSTNAME = os.environ["HOSTNAME"]
+
     client = pymongo.MongoClient(MONGO_URI)
     collection = client[DB_NAME][COLLECTION_NAME]
 
@@ -116,7 +116,7 @@ if __name__ == "__main__":
             except Exception as e:
                 logger.warning("Spool flush failed, will retry next cycle: %s", e)
 
-        metrics = collect_metrics()
+        metrics = collect_metrics(HOSTNAME)
         try:
             result = collection.insert_one(metrics)
             logger.info("Inserted document with _id: %s at %s", result.inserted_id, metrics['timestamp'])

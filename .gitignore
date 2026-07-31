@@ -4,3 +4,5 @@ nohup.out
 logs/*
 personalDocs/
 __pycache__/
+.venv/
+.pytest_cache/
