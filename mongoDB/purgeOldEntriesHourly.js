@@ -13,14 +13,14 @@ exports = async function () {
     .db(databaseName)
     .collection(collectionName);
 
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
   try {
     const result = await collection.deleteMany({
-      timestamp: { $lt: thirtyDaysAgo }
+      timestamp: { $lt: ninetyDaysAgo }
     });
-    console.log(`Deleted ${result.deletedCount} documents older than 30 days.`);
+    console.log(`Deleted ${result.deletedCount} documents older than 90 days.`);
   } catch (err) {
     console.log("error performing purge: ", err.message);
   }
