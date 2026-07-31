@@ -1,8 +1,10 @@
 import os
 import sys
+
 from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+
 from onboarding import populate_specifications
 
 load_dotenv()
@@ -14,7 +16,7 @@ if __name__ == "__main__":
     try:
         populate_specifications(client)
         print("\nSpecifications updated.")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"\nFailed to update specifications: {e}")
         sys.exit(1)
     finally:

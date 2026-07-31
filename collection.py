@@ -1,12 +1,13 @@
-import psutil
-from datetime import datetime, timezone
-import subprocess
-import sys
-import os
 import json
 import logging
+import os
+import subprocess
+import sys
 import time
 from collections import deque
+from datetime import datetime, timezone
+
+import psutil
 import pymongo
 from dotenv import load_dotenv
 
@@ -69,17 +70,17 @@ def ping_latency(host="8.8.8.8"):
         # Use 1 ping, wait max 2 seconds, output in ms
         result = subprocess.run([
             "ping", "-c", "1", "-W", "2", host
-        ], capture_output=True, text=True)
+        ], capture_output=True, text=True, check=False)
         if result.returncode == 0:
             for line in result.stdout.splitlines():
                 if "time=" in line:
                     # Extract the time=XX ms part
                     try:
                         return float(line.split("time=")[1].split()[0])
-                    except Exception:
+                    except Exception:  # noqa: BLE001, S112
                         continue
         return None
-    except Exception:
+    except Exception:  # noqa: BLE001
         return None
 
 def collect_metrics(hostname):
@@ -113,7 +114,7 @@ if __name__ == "__main__":
                 result = collection.insert_many(spooled)
                 logger.info("Flushed %d spooled sample(s) from %s", len(result.inserted_ids), SPOOL_PATH)
                 save_spool([])
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.warning("Spool flush failed, will retry next cycle: %s", e)
 
         metrics = collect_metrics(HOSTNAME)
@@ -123,7 +124,7 @@ if __name__ == "__main__":
             id_log = load_id_log()
             id_log.append(str(result.inserted_id))
             save_id_log(id_log)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error("MongoDB insert failed, spooling for retry: %s", e)
             spooled = load_spool()
             spooled.append(metrics)

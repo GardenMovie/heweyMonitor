@@ -1,7 +1,8 @@
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
+
 from dotenv import load_dotenv, set_key
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
@@ -99,12 +100,11 @@ def setup_databases(client):
 
         existing = metrics_db[coll_name].index_information()
         has_ts_index = any("timestamp" in str(v.get("key")) for v in existing.values())
-        if not has_ts_index:
-            if ttl_seconds:
-                metrics_db[coll_name].create_index(
-                    "timestamp", expireAfterSeconds=ttl_seconds
-                )
-                print(f"      TTL index set ({ttl_seconds}s) on Metrics.{coll_name}")
+        if not has_ts_index and ttl_seconds:
+            metrics_db[coll_name].create_index(
+                "timestamp", expireAfterSeconds=ttl_seconds
+            )
+            print(f"      TTL index set ({ttl_seconds}s) on Metrics.{coll_name}")
 
 def setup_triggers():
     step("Atlas Scheduled Triggers (hourlyRollup / dailyRollup / purgeOldEntriesHourly)")
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         populate_specifications(client)
         install_systemd_service()
         print("\nOnboarding complete.")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"\nOnboarding failed: {e}")
         sys.exit(1)
     finally:
