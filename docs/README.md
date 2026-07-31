@@ -62,7 +62,7 @@ If you prefer to set up each step yourself:
 #### 1. Verify MongoDB connection
 
 ```bash
-python3 pingMongoDB.py
+python3 utilities/ping_mongoDB.py
 ```
 
 #### 2. Create collections and TTL indexes
