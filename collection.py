@@ -4,12 +4,20 @@ import subprocess
 import sys
 import os
 import json
+import logging
 import time
 from collections import deque
 import pymongo
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+    stream=sys.stdout,
+)
+logger = logging.getLogger(__name__)
 
 MONGO_URI = os.environ["MONGO_URI"]
 HOSTNAME = os.environ["HOSTNAME"]
@@ -103,20 +111,20 @@ if __name__ == "__main__":
         if spooled:
             try:
                 result = collection.insert_many(spooled)
-                print(f"Flushed {len(result.inserted_ids)} spooled sample(s) from {SPOOL_PATH}")
+                logger.info("Flushed %d spooled sample(s) from %s", len(result.inserted_ids), SPOOL_PATH)
                 save_spool([])
             except Exception as e:
-                print(f"Spool flush failed, will retry next cycle: {e}")
+                logger.warning("Spool flush failed, will retry next cycle: %s", e)
 
         metrics = collect_metrics()
         try:
             result = collection.insert_one(metrics)
-            print(f"Inserted document with _id: {result.inserted_id} at {metrics['timestamp']}")
+            logger.info("Inserted document with _id: %s at %s", result.inserted_id, metrics['timestamp'])
             id_log = load_id_log()
             id_log.append(str(result.inserted_id))
             save_id_log(id_log)
         except Exception as e:
-            print(f"MongoDB insert failed, spooling for retry: {e}")
+            logger.error("MongoDB insert failed, spooling for retry: %s", e)
             spooled = load_spool()
             spooled.append(metrics)
             save_spool(spooled)
