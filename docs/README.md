@@ -102,8 +102,10 @@ If a document with the same `hostname` already exists, replace it.
 
 #### 5. Install the systemd service
 
+The unit file is a template (`{{USER}}` / `{{WORKDIR}}` placeholders); substitute in your user and this repo's absolute path before installing:
+
 ```bash
-sudo cp systemd/vigilis-lector.service /etc/systemd/system/
+sed -e "s#{{USER}}#$USER#g" -e "s#{{WORKDIR}}#$(pwd)#g" systemd/vigilis-lector.service | sudo tee /etc/systemd/system/vigilis-lector.service > /dev/null
 sudo systemctl daemon-reload
 sudo systemctl enable --now vigilis-lector.service
 ```

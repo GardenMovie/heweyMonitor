@@ -5,9 +5,9 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=garden
-WorkingDirectory=/home/garden/dev/vigilis-lector
-ExecStart=/usr/bin/python3 /home/garden/dev/vigilis-lector/collection.py
+User={{USER}}
+WorkingDirectory={{WORKDIR}}
+ExecStart=/usr/bin/python3 {{WORKDIR}}/collection.py
 Restart=always
 RestartSec=60
 

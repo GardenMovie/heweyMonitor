@@ -143,11 +143,22 @@ def install_systemd_service():
         print(f"    Service file not found at {SYSTEMD_SERVICE_SRC}")
         sys.exit(1)
 
+    workdir = os.path.dirname(os.path.abspath(__file__))
+    user = os.environ.get("SUDO_USER") or os.environ["USER"]
+
+    with open(SYSTEMD_SERVICE_SRC) as f:
+        unit = f.read()
+    unit = unit.replace("{{USER}}", user).replace("{{WORKDIR}}", workdir)
+
     try:
+        tmp_path = "/tmp/vigilis-lector.service"
+        with open(tmp_path, "w") as f:
+            f.write(unit)
         subprocess.run(
-            ["sudo", "cp", SYSTEMD_SERVICE_SRC, SYSTEMD_SERVICE_DEST],
+            ["sudo", "cp", tmp_path, SYSTEMD_SERVICE_DEST],
             check=True,
         )
+        os.remove(tmp_path)
         subprocess.run(["sudo", "systemctl", "daemon-reload"], check=True)
         subprocess.run(
             ["sudo", "systemctl", "enable", "--now", "vigilis-lector.service"],
