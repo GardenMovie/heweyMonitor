@@ -2,6 +2,8 @@
 
 A lightweight hardware metrics collector that runs on Linux hosts and ships data to MongoDB Atlas. Metrics are collected every minute and rolled up to hourly and daily aggregates via Atlas Scheduled Triggers.
 
+![Architecture diagram](images/diagram.png)
+
 ## How it works
 
 - `collection.py` gathers CPU, RAM, disk, and ping readings once per minute and inserts them into `Metrics.hardwareMin`.
