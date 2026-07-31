@@ -2,3 +2,5 @@
 .env
 nohup.out
 logs/*
+personalDocs/
+__pycache__/
